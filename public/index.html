@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Threads Media Downloader</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        input { width: 80%; padding: 10px; margin-bottom: 10px; }
+        button { padding: 10px 20px; cursor: pointer; margin-top: 10px; }
+        #preview { margin-top: 20px; }
+        img, video { max-width: 100%; height: auto; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Threads Media Downloader</h1>
+    <form id="downloadForm">
+        <input type="text" id="threadUrl" placeholder="Enter Threads post URL" required />
+        <button type="submit">Get Media</button>
+    </form>
+
+    <div id="preview"></div>
+
+    <script>
+        document.getElementById("downloadForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const url = document.getElementById("threadUrl").value;
+            const previewDiv = document.getElementById("preview");
+
+            previewDiv.innerHTML = `<p>Fetching media...</p>`;
+
+            try {
+                const response = await fetch(`http://localhost:4000/download?url=${encodeURIComponent(url)}`);
+                const data = await response.json();
+
+                if (data.error) {
+                    previewDiv.innerHTML = `<p style="color:red;">${data.error}</p>`;
+                    return;
+                }
+
+                previewDiv.innerHTML = "";
+                data.mediaUrls.forEach((mediaUrl) => {
+                    if (mediaUrl.includes(".mp4")) {
+                        previewDiv.innerHTML += `
+                            <video controls>
+                                <source src="${mediaUrl}" type="video/mp4">
+                            </video>
+                            <button onclick="downloadMedia('${mediaUrl}', 'video.mp4')">Download Video</button>
+                        `;
+                    } else {
+                        previewDiv.innerHTML += `
+                            <img src="${mediaUrl}" alt="Threads Image">
+                            <button onclick="downloadMedia('${mediaUrl}', 'image.jpg')">Download Image</button>
+                        `;
+                    }
+                });
+            } catch (error) {
+                previewDiv.innerHTML = `<p style="color:red;">Error fetching media.</p>`;
+            }
+        });
+
+        function downloadMedia(url, filename) {
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", url, true);
+            xhr.responseType = "blob"; // The response is a Blob (binary data)
+            
+            xhr.onload = function() {
+                const blob = xhr.response;
+                const a = document.createElement('a');
+                const url = window.URL.createObjectURL(blob); // Create an object URL for the Blob
+                a.href = url;
+                a.download = filename;
+                a.click();
+                window.URL.revokeObjectURL(url); // Clean up the object URL
+            };
+            
+            xhr.onerror = function() {
+                alert("Failed to download media.");
+            };
+            
+            xhr.send(); // Send the request
+        }
+    </script>
+</body>
+</html>
+
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Threads Media Downloader</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        input { width: 80%; padding: 10px; margin-bottom: 10px; }
+        button { padding: 10px 20px; cursor: pointer; margin-top: 10px; }
+        #preview { margin-top: 20px; }
+        img, video { max-width: 100%; height: auto; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Threads Media Downloader</h1>
+    <form id="downloadForm">
+        <input type="text" id="threadUrl" placeholder="Enter Threads post URL" required />
+        <button type="submit">Get Media</button>
+    </form>
+
+    <div id="preview"></div>
+
+    <script>
+        document.getElementById("downloadForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const url = document.getElementById("threadUrl").value;
+            const previewDiv = document.getElementById("preview");
+            
+            previewDiv.innerHTML = `<p>Fetching media...</p>`;
+
+            try {
+                const response = await fetch(`http://localhost:4000/download?url=${encodeURIComponent(url)}`);
+                const data = await response.json();
+
+                if (data.error) {
+                    previewDiv.innerHTML = `<p style="color:red;">${data.error}</p>`;
+                    return;
+                }
+
+                previewDiv.innerHTML = "";
+                data.mediaUrls.forEach((mediaUrl) => {
+                    if (mediaUrl.includes(".mp4")) {
+                        previewDiv.innerHTML += `
+                            <video controls>
+                                <source src="${mediaUrl}" type="video/mp4">
+                            </video>
+                            <a href="${mediaUrl}" download="video.mp4">
+                                <button>Download Video</button>
+                            </a>
+                        `;
+                    } else {
+                        previewDiv.innerHTML += `
+                            <img src="${mediaUrl}" alt="Threads Image">
+                            <a href="${mediaUrl}" download="image.jpg">
+                                <button>Download Image</button>
+                            </a>
+                        `;
+                    }
+                });
+            } catch (error) {
+                previewDiv.innerHTML = `<p style="color:red;">Error fetching media.</p>`;
+            }
+        });
+    </script>
+</body>
+</html> -->
