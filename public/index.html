@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Threads Video Downloader</title>
+</head>
+<body>
+
+    <h1>Threads Video Downloader</h1>
+    <input type="text" id="threadUrl" placeholder="Enter Threads post URL" />
+    <button onclick="fetchVideoUrl()">Fetch Video</button>
+    
+    <video id="videoPreview" width="300" controls style="display:none;">
+        <source id="videoSource" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    
+    <button id="downloadBtn" style="display: none;" onclick="downloadVideo()">Download Video</button>
+    
+    <script>
+        let videoUrl = ""; // Store the fetched video URL
+    
+        async function fetchVideoUrl() {
+            const url = document.getElementById('threadUrl').value.trim();
+            if (!url) {
+                alert("Please enter a Threads post URL");
+                return;
+            }
+    
+            const apiUrl = `/fetch-video?url=${encodeURIComponent(url)}`;
+            console.log('Fetching from:', apiUrl);
+    
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+    
+                const data = await response.json();
+                if (!data.videoUrl) {
+                    alert("No video found for this post.");
+                    return;
+                }
+    
+                // Store the video URL
+                videoUrl = data.videoUrl;
+    
+                // Show video preview
+                const videoPreview = document.getElementById('videoPreview');
+                const videoSource = document.getElementById('videoSource');
+                videoSource.src = videoUrl;
+                videoPreview.style.display = 'block';
+                videoPreview.load();
+    
+                // Enable download button
+                document.getElementById('downloadBtn').style.display = 'block';
+    
+            } catch (error) {
+                console.error('Error fetching video:', error);
+                alert('Failed to fetch video.');
+            }
+        }
+    
+        async function downloadVideo() {
+            if (!videoUrl) {
+                alert("No video URL available.");
+                return;
+            }
+    
+            try {
+                const response = await fetch(videoUrl);
+                const blob = await response.blob(); // Convert response to binary data
+                const url = window.URL.createObjectURL(blob); // Create temporary URL
+    
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'threads-video.mp4'; // Set filename
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url); // Cleanup URL
+            } catch (error) {
+                console.error("Download error:", error);
+                alert("Failed to download video.");
+            }
+        }
+    </script>
+    
+
+</body>
+</html>
+
+
+<!-- 
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Threads Video Downloader</title>
+</head>
+<body>
+    <h1>Threads Video Downloader</h1>
+    <input type="text" id="threadUrl" placeholder="Enter Threads Post URL">
+    <button onclick="fetchVideoUrl()">Get Video</button>
+    <div id="embedContainer"></div>
+    <a id="downloadBtn" style="display: none;" download="threads-video.mp4">Download Video</a>
+
+    <script>
+        async function fetchVideoUrl() {
+            const url = document.getElementById('threadUrl').value.trim();
+            if (!url) {
+                alert("Please enter a Threads post URL");
+                return;
+            }
+
+            const apiUrl = `/fetch-video?url=${encodeURIComponent(url)}`;
+            console.log('Fetching from:', apiUrl);
+
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+                const data = await response.json();
+                if (!data.videoUrl) {
+                    alert("No video found for this post.");
+                    return;
+                }
+
+                // Show video preview
+                document.getElementById('embedContainer').innerHTML = `
+                    <video width="300" controls>
+                        <source src="${data.videoUrl}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                `;
+
+                // Show download button
+                const downloadBtn = document.getElementById('downloadBtn');
+                downloadBtn.style.display = 'block';
+                downloadBtn.href = data.videoUrl; // Direct download link
+            } catch (error) {
+                console.error('Error fetching video:', error);
+                alert('Failed to fetch video.');
+            }
+        }
+    </script>
+</body>
+</html> -->
