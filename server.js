@@ -14,41 +14,45 @@ const PORT = 3000;
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/fetch-video', async (req, res) => {
-    const { url } = req.query;
-    if (!url) return res.status(400).json({ error: 'No URL provided' });
-
     try {
-        const browser = await puppeteer.launch({ headless: true,
+        console.log("Fetching video for URL:", req.query.url);
+        const browser = await puppeteer.launch({
+            headless: true,
             args: ["--no-sandbox", "--disable-setuid-sandbox"],
-         });
+        });
+
         const page = await browser.newPage();
         await page.setUserAgent(
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
         );
 
-        console.log("Navigating to:", url);
-        await page.goto(url, { waitUntil: 'networkidle2' });
+        console.log("Navigating to:", req.query.url);
+        await page.goto(req.query.url, { waitUntil: "networkidle2" });
 
-        // Wait and check for a video element
-        await page.waitForSelector('video', { timeout: 10000 });
+        console.log("Checking for video element...");
+        await page.waitForSelector("video", { timeout: 10000 });
 
         const videoUrl = await page.evaluate(() => {
-            const video = document.querySelector('video source') || document.querySelector('video');
+            const video = document.querySelector("video source") || document.querySelector("video");
             return video ? video.src : null;
         });
 
         console.log("Extracted Video URL:", videoUrl);
         await browser.close();
 
-        if (!videoUrl) return res.status(404).json({ error: 'No video found' });
+        if (!videoUrl) {
+            console.error("❌ No video found on page.");
+            return res.status(404).json({ error: "No video found" });
+        }
 
         res.json({ videoUrl });
 
     } catch (error) {
-        console.error('Error fetching video:', error);
-        res.status(500).json({ error: 'Error fetching video' });
+        console.error("🔥 Server Error:", error); // Log Full Error Stack
+        res.status(500).json({ error: error.message });
     }
 });
+
 
 
 app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
@@ -141,3 +145,39 @@ app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`)
 
 // // Start server
 // app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
+// app.get('/fetch-video', async (req, res) => {
+//     const { url } = req.query;
+//     if (!url) return res.status(400).json({ error: 'No URL provided' });
+
+//     try {
+//         const browser = await puppeteer.launch({ headless: true,
+//             args: ["--no-sandbox", "--disable-setuid-sandbox"],
+//          });
+//         const page = await browser.newPage();
+//         await page.setUserAgent(
+//             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+//         );
+
+//         console.log("Navigating to:", url);
+//         await page.goto(url, { waitUntil: 'networkidle2' });
+
+//         // Wait and check for a video element
+//         await page.waitForSelector('video', { timeout: 10000 });
+
+//         const videoUrl = await page.evaluate(() => {
+//             const video = document.querySelector('video source') || document.querySelector('video');
+//             return video ? video.src : null;
+//         });
+
+//         console.log("Extracted Video URL:", videoUrl);
+//         await browser.close();
+
+//         if (!videoUrl) return res.status(404).json({ error: 'No video found' });
+
+//         res.json({ videoUrl });
+
+//     } catch (error) {
+//         console.error('Error fetching video:', error);
+//         res.status(500).json({ error: 'Error fetching video' });
+//     }
+// });
