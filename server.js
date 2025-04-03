@@ -54,17 +54,22 @@ app.get('/fetch-video', async (req, res) => {
     }
 });
 
-const puppeteer = require('puppeteer');
+
+
+
 
 (async () => {
     try {
-        const browserFetcher = puppeteer.createBrowserFetcher();
-        const localRevisions = await browserFetcher.localRevisions();
-        console.log("Installed Chrome Versions:", localRevisions);
+        const browser = await puppeteer.launch();
+        const version = await browser.version();
+        console.log("Installed Chrome Version:", version);
+        await browser.close();
     } catch (error) {
         console.error("Error checking installed Chrome versions:", error);
     }
 })();
+
+
 
 
 app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
