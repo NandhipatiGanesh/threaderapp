@@ -17,6 +17,7 @@ app.get('/fetch-video', async (req, res) => {
     try {
         console.log("Fetching video for URL:", req.query.url);
         const browser = await puppeteer.launch({
+            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || "/usr/bin/google-chrome",
             headless: true,
             args: ["--no-sandbox", "--disable-setuid-sandbox"],
         });
@@ -53,6 +54,17 @@ app.get('/fetch-video', async (req, res) => {
     }
 });
 
+const puppeteer = require('puppeteer');
+
+(async () => {
+    try {
+        const browserFetcher = puppeteer.createBrowserFetcher();
+        const localRevisions = await browserFetcher.localRevisions();
+        console.log("Installed Chrome Versions:", localRevisions);
+    } catch (error) {
+        console.error("Error checking installed Chrome versions:", error);
+    }
+})();
 
 
 app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
