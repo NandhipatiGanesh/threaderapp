@@ -17,7 +17,7 @@ app.get('/fetch-video', async (req, res) => {
     try {
         console.log("Fetching video for URL:", req.query.url);
         const browser = await puppeteer.launch({
-            //executablePath: "/usr/bin/google-chrome",
+            executablePath: "/usr/bin/google-chrome",
             headless: true,
             args: ["--no-sandbox", "--disable-setuid-sandbox"],
         });
