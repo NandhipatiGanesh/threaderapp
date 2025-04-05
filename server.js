@@ -58,7 +58,7 @@ app.get('/fetch-video', async (req, res) => {
 
 
 
-(async () => {
+/* (async () => {
     try {
         const browser = await puppeteer.launch();
         const version = await browser.version();
@@ -67,7 +67,7 @@ app.get('/fetch-video', async (req, res) => {
     } catch (error) {
         console.error("Error checking installed Chrome versions:", error);
     }
-})();
+})(); */
 
 
 
